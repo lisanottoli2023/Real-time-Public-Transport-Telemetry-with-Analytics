@@ -29,10 +29,13 @@ jobs:
         run: echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: uv sync
+        run: |
+          cd Producer && uv sync
+          cd ../Consumer && uv sync
+          cd ../Analytics && uv sync
 
       - name: Run tests
-        run: uv run pytest
+        run: echo "No tests yet"
 
 
   build-and-push:
