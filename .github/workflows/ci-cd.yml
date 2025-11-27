@@ -70,18 +70,33 @@ jobs:
   tag-version:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to create tags
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for tagging
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create Git tag
+      - name: Generate version tag
+        id: version
         run: |
-          git tag v2
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/lisanottoli2023/Real-time-Public-Transport-Telemetry-with-Analytics.git --tags
+          # Get the latest tag, increment it
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0")
+          VERSION_NUMBER=$(echo $LATEST_TAG | sed 's/v//' | awk '{print $1+1}')
+          NEW_TAG="v${VERSION_NUMBER}"
+          echo "new_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+          echo "Generated new tag: ${NEW_TAG}"
+
+      - name: Create and push Git tag
+        run: |
+          git tag ${{ steps.version.outputs.new_tag }}
+          git push origin ${{ steps.version.outputs.new_tag }}
 
       
