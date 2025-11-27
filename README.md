@@ -116,7 +116,7 @@ Build Docker images
 
 Push to Docker Hub
 
-Automatic Git version tagging
+Git tagging
 
 
 7. Analytics & Data Processing

@@ -81,6 +81,7 @@ jobs:
 
       - name: Create Git tag
         run: |
-          TAG=v${{ github.run_number }}
-          git tag $TAG
-          git push origin $TAG
+          git tag v2
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/lisanottoli2023/Real-time-Public-Transport-Telemetry-with-Analytics.git --tags
+
+      
