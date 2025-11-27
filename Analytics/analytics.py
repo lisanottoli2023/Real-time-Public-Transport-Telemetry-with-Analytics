@@ -2,11 +2,14 @@ import psycopg2
 import os 
 import time
 from datetime import datetime, timezone
+from prometheus_client import start_http_server, Gauge, Counter
+
 
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 conn = psycopg2.connect(DATABASE_URL)
 cursor = conn.cursor()
+start_http_server(8000)
 
 
 
@@ -80,6 +83,16 @@ def store_metrics(metrics: dict):
     except Exception as e:
         print(f"Error storing metrics: {e}")
 
+# Gauge for average speed per bus
+bus_speed_gauge = Gauge('bus_average_speed', 'Average speed of buses', ['bus_id'])
+
+# Gauge for total passengers per bus
+bus_passengers_gauge = Gauge('bus_total_passengers', 'Total passengers on a bus', ['bus_id'])
+
+# Counter for events processed per bus
+events_counter = Counter('bus_events_total', 'Total bus telemetry events processed', ['bus_id'])
+
+
 def run_analytics():
     print("Starting analytics service...")
     
@@ -92,6 +105,9 @@ def run_analytics():
                 
                 for metrics in metrics_list:
                     store_metrics(metrics)
+                    bus_speed_gauge.labels(bus_id=metrics["bus_id"]).set(metrics["average_speed"])
+                    bus_passengers_gauge.labels(bus_id=metrics["bus_id"]).set(metrics["total_passengers"])
+                    events_counter.labels(bus_id=metrics["bus_id"]).inc(metrics["event_per_minute"])
             else:
                 print("No data found for metrics calculation")
             
